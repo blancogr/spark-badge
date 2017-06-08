@@ -27,7 +27,12 @@
       <artifactId>spark-sql_2.11</artifactId>
     </dependency>
   </dependencies>
-
+  <repositories>
+    <repository>
+      <id>MvnRepository</id>
+      <url>https://mvnrepository.com/</url>
+    </repository>
+  </repositories>
   <build>
     <finalName>${project.artifactId}</finalName>
   </build>

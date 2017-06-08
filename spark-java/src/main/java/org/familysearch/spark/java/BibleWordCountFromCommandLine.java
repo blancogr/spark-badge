@@ -48,7 +48,13 @@ public class BibleWordCountFromCommandLine {
    *
    *   It is useful to become familiar with the spark-submit script because it is used to run Spark applications on a cluster.
    *
-   *   todo copy your spark-submit command here
+   * My command line:
+   *   $SPARK_HOME/bin/spark-submit --master local[*] \
+   *   --class org.familysearch.spark.java.BibleWordCountFromCommandLine \
+   *   spark-java/target/spark-java.jar \
+   *   ./input/bible-lines \
+   *   ./output/task4 \
+   *   ./input/stop-words
    */
   public static void main(String[] args) throws IOException {
     if (args.length != 3) {

@@ -1,6 +1,10 @@
 package org.familysearch.spark.java;
 
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.familysearch.spark.java.util.SparkUtil;
 
@@ -57,6 +61,20 @@ public class CreateBibleDataFrameFromRawText {
    * @param output result output directory
    */
   private static void run(final JavaSparkContext sc, final SparkSession spark, final String input, final String output) {
-    // todo write code here
+    JavaRDD<WordBookTestament> rdd = spark.read().textFile(input).javaRDD().map((Function<String, WordBookTestament>) str -> {
+      String[] chunks = str.split("\t");
+      WordBookTestament wbt = new WordBookTestament();
+      if(chunks.length == 3) {
+        wbt.setWord(chunks[0]);
+        wbt.setBook(chunks[1]);
+        wbt.setTestament(chunks[2]);
+      }
+      return wbt;
+    });
+
+    Dataset<Row> ds = spark.createDataFrame(rdd, WordBookTestament.class);
+    ds.write().parquet(output);
   }
 }
+
+
