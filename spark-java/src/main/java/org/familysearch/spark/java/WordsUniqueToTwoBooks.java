@@ -1,7 +1,11 @@
 package org.familysearch.spark.java;
 
+import com.google.common.collect.Iterables;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.familysearch.spark.java.util.SparkUtil;
+import scala.Tuple2;
+import scala.Tuple3;
 
 import java.io.IOException;
 
@@ -88,6 +92,21 @@ public class WordsUniqueToTwoBooks {
    * @param output result output directory
    */
   private static void run(final JavaSparkContext sc, final String input, final String output) {
-    // todo write code here
+    JavaPairRDD<String, String> tuples = sc
+      .textFile(input)
+      .distinct()
+      .mapToPair(line -> {
+        String[] chunks = line.split("\t");
+        return new Tuple2<>(chunks[0], chunks[1]);
+      })
+      .distinct();
+
+    JavaPairRDD<String, Iterable<String>> wordsByBook = tuples
+      .groupByKey();
+
+    wordsByBook
+      .filter(tuple -> Iterables.size(tuple._2) == 2)
+      .map(tuple -> tuple._1() + "\t" + tuple._2())
+      .saveAsTextFile(output);
   }
 }
