@@ -2,8 +2,10 @@ package org.familysearch.spark.java;
 
 import org.apache.spark.api.java.JavaSparkContext;
 import org.familysearch.spark.java.util.SparkUtil;
+import scala.Tuple2;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Class created by dalehulse on 3/27/17.
@@ -77,6 +79,26 @@ public class BibleWordCount2 {
    * @param output result output directory
    */
   static void run(final JavaSparkContext sc, final String input, final String stopWordsIn, final String output) {
-    // todo write code here
+    sc
+      .textFile(input)
+      .flatMap(line -> Arrays.asList(line.split(" ")).iterator())
+      .filter(word -> !word.matches("[0-9]+:[0-9]+") && word.length() != 0) // --------------------------> cleaning empty strings here
+      .map(word -> {
+        String toReturn = word;
+        if((word.endsWith(",") || word.endsWith(";") || word.endsWith(":") || word.endsWith(".") || word.endsWith("'"))) {
+          toReturn = word.substring(0, word.length() - 1);
+        }
+        if(word.startsWith("(")) {
+          toReturn = word.replaceAll("\\(", "");
+        }
+        return toReturn.toLowerCase();
+      })
+      .mapToPair(w -> new Tuple2<>(w, 1))
+      .reduceByKey((t1, t2) -> t1 + t2)
+      .mapToPair(Tuple2::swap)
+      .sortByKey(false)
+      .map(tuple -> tuple._1() + "\t" + tuple._2())
+      .saveAsTextFile(output);
+
   }
 }
