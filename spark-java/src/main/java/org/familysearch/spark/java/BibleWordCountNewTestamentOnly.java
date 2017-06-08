@@ -119,10 +119,10 @@ public class BibleWordCountNewTestamentOnly {
    */
   private static void run(final SparkSession spark, final String input, final String output) throws AnalysisException {
     Dataset<Row> df = spark.read().parquet(input);
-    Dataset<Row> newTestamentRows = df.where(col("testament").equalTo("new-testament"))
-      .groupBy(col("testament"))
+    Dataset<Row> newTestamentRows =
+      df.where(col("testament").equalTo("new-testament"))
+      .groupBy(col("word"))
       .agg(count("word").as("count"));
-    newTestamentRows.show();
 
     newTestamentRows.javaRDD()
       .map(row -> row.getAs("word").toString() + "\t" + row.getAs("count").toString())
